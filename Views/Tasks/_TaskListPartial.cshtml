@@ -1,0 +1,23 @@
+﻿@model List<ToDoList>
+
+<table class="table">
+    <thead class="thead-dark">
+        <tr>
+            <th>Task ID</th>
+            <th>Task Name</th>
+            <th>Task Description</th>
+            <th>Task Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var task in Model)
+        {
+            <tr>
+                <td scope="row">@task.Id</td>
+                <td>@task.Title</td>
+                <td>@task.Description</td>
+                <td>@(task.Success ? "✅ Done" : "❌ Incomplete")</td>
+            </tr>
+        }
+    </tbody>
+</table>

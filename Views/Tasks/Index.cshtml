@@ -1,0 +1,99 @@
+﻿@* @model IEnumerable<ToDoList>
+
+<table class="table">
+    <thead class="thead-dark">
+       
+        <tr>
+            <th scope="col">Nº</th>
+            <th scope="col">Title</th>
+            <th scope="col">Description</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+       
+         @foreach(var item in Model){
+        <tr>
+            <th scope="row">@item.Id</th>
+            <td>@item.Title</td>
+            <td>@item.Description</td>
+            <td>@item.Success</td>
+            </tr>
+        }
+ 
+    </tbody>
+</table>
+<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+    <form method="get" action="@Url.Action("Index", "Tasks")">
+        <input type="hidden" name="success" value="true" />
+        <button type="submit" class="btn btn-secondary">Done</button>
+    </form>
+    <form method="get" action="@Url.Action("Index", "Tasks")">
+        <input type="hidden" name="success" value="false" />
+        <button type="submit" class="btn btn-secondary">Incomplete</button>
+    </form>
+    
+
+    <div class="btn-group" role="group">
+        <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+             Actions   
+        </button>
+        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+            <a class="dropdown-item" href="#">Create new task</a>
+            <a class="dropdown-item" href="#">Update task</a>
+            <a class="dropdown-item" href="#">Delete task</a>
+        </div>
+    </div>
+</div> *@
+@model IEnumerable<ToDoList>
+
+
+
+
+
+<h2>List to do</h2>
+
+<!-- Botones de filtrado -->
+<div class="btn-group" role="group" aria-label="Button group">
+    <button class="btn btn-success filter-btn" data-status="true">✅ Done</button>
+    <button class="btn btn-danger filter-btn" data-status="false">❌ Incomplete</button>
+    <button class="btn btn-secondary filter-btn" data-status="">🔄 All tasks</button>
+</div>
+
+<!-- Contenedor donde se actualizará la tabla sin recargar la página -->
+<div id="taskList">
+    @Html.Partial("_TaskListPartial", Model)
+</div>
+
+<!-- Menú de acciones -->
+<div class="btn-group mt-3" role="group">
+    <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+        📌 Options
+    </button>
+    <div class="dropdown-menu">
+        <a class="dropdown-item" asp-action="Create" asp-controller="Tasks">Create task</a>
+        <a class="dropdown-item" href="#">Edit task</a>
+        <a class="dropdown-item" href="#">Delete task</a>
+    </div>
+</div>
+
+<!-- Script para actualizar dinámicamente la tabla sin recargar -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(".filter-btn").click(function () {
+            var status = $(this).data("status");
+            $.ajax({
+                url: "/Tasks/Index",
+                type: "GET",
+                data: { success: status },
+                success: function (data) {
+                    $("#taskList").html(data);
+                },
+                error: function () {
+                    alert("Error al cargar las tareas.");
+                }
+            });
+        });
+    });
+</script>
