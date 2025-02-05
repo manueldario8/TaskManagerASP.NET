@@ -24,10 +24,28 @@ namespace ToDoListWebApp.Repository
             return await Save();
         }
 
-        public async Task<bool> UpdateAsync(ToDoList task)
+        public async Task<bool> UpdateAsync(ToDoList item)
         {
-            _dbContext.Update(task);
-            return await Save();
+            try
+            {
+                var task = await _dbContext.ListToDo.FindAsync(item.Id);
+                if (task == null)
+                {
+                    return false;  // No se encontró la tarea
+                }
+
+                task.Success = item.Success;  // Actualizar el estado de 'Success'
+                task.Title = item.Title;      // Si también quieres permitir editar otros campos
+
+                _dbContext.ListToDo.Update(task);
+                await _dbContext.SaveChangesAsync();
+
+                return true;  // Si todo fue exitoso
+            }
+            catch
+            {
+                return false;  // En caso de error, retornamos 'false'
+            }
         }
 
         public async Task<IEnumerable<ToDoList>> GetAll()

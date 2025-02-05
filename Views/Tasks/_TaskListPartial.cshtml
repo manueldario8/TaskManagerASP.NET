@@ -7,8 +7,9 @@
             <th>Task Name</th>
             <th>Task Description</th>
             <th>Task Status</th>
+            <th>Actions</th>
         </tr>
-    </thead>
+    </thead><br />
     <tbody>
         @foreach (var task in Model)
         {
@@ -16,7 +17,22 @@
                 <td scope="row">@task.Id</td>
                 <td>@task.Title</td>
                 <td>@task.Description</td>
-                <td>@(task.Success ? "✅ Done" : "❌ Incomplete")</td>
+                <td data-task-status="@task.Id">@(task.Success ? "✅ Done" : "❌ Incomplete")</td>  
+                <td>
+                
+                    <!-- Botón Edit para cambiar el estado -->
+                    <button class="btn btn-primary edit-task" data-id="@task.Id" data-status="@task.Success">
+                        Edit
+                    </button>     
+                    <div id="edit-status-@task.Id" class="status-edit-form" asp-for="Task.Success" style="display:none;">
+                        <select class="form-select" id="status-selector-@task.Id">                            
+                            <option value="true">Done </option>
+                            <option value="false">Incomplete</option>
+                        </select>
+                        <button class="btn btn-success save-status" data-id="@task.Id">Save</button>
+                        <button class="btn btn-secondary cancel-edit" data-id="@task.Id">Cancel</button>
+                    </div>
+                </td>
             </tr>
         }
     </tbody>

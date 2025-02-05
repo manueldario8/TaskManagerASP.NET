@@ -35,15 +35,11 @@ namespace ToDoListWebApp.Controllers
             return View(tasks);
         }
 
-
-
         [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
-
-
 
         [HttpPost]
         public  async Task<IActionResult> Create(ToDoList newtask)
@@ -73,6 +69,31 @@ namespace ToDoListWebApp.Controllers
             return View(newtask); 
 
         }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ToggleTaskStatus(int id, bool success)
+        {
+            var task = await _listtask.GetByIdAsync(id);
+            if (task == null)
+            {
+                return Json(new { success = false });  // Si no se encuentra la tarea, devolvemos 'false'
+            }
+
+            task.Success = !task.Success;  // Cambiar el estado de 'Success'
+
+            // Llamamos a UpdateAsync y comprobamos si fue exitoso
+            var updateSuccess = await _listtask.UpdateAsync(task);
+            if (updateSuccess)
+            {
+                return Json(new { success = true, newStatus = task.Success });
+            }
+            else
+            {
+                return Json(new { success = false });
+            }
+        }
+
 
     }
 }

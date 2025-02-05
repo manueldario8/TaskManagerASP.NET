@@ -47,10 +47,6 @@
 </div> *@
 @model IEnumerable<ToDoList>
 
-
-
-
-
 <h2>List to do</h2>
 
 <!-- Botones de filtrado -->
@@ -81,19 +77,68 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function () {
+        // Filtrar las tareas según su estado (completado o pendiente)
         $(".filter-btn").click(function () {
             var status = $(this).data("status");
             $.ajax({
                 url: "/Tasks/Index",
                 type: "GET",
-                data: { success: status },
+                data: { success: status }, // Enviar el filtro de estado (true o false)
                 success: function (data) {
-                    $("#taskList").html(data);
+                    $("#taskList").html(data); // Actualizar la lista de tareas en la vista
                 },
                 error: function () {
                     alert("Error al cargar las tareas.");
                 }
             });
+        });
+
+        // Mostrar el formulario para editar el estado de la tarea
+        $(".edit-task").click(function () {
+            var taskId = $(this).data("id");
+            $("#edit-status-" + taskId).show(); // Mostrar el selector de estado
+            $(this).hide(); // Ocultar el botón de edición
+        });
+
+        // Guardar el nuevo estado de la tarea
+        $(".save-status").click(function () {
+            var taskId = $(this).data("id");
+            var newStatus = $("#status-selector-" + taskId).val() === "true"; // Obtener el nuevo estado
+
+             console.log("Task ID:", taskId); // 🔍 Verifica que taskId sea correcto
+             console.log("New Status:", newStatus); // 🔍 Verifica que newStatus sea "true" o "false"
+
+            // Realizar la solicitud AJAX para actualizar el estado de la tarea
+            $.ajax({
+                url: '/Tasks/ToggleTaskStatus',
+                type: 'POST',
+                data: { id: taskId, success: newStatus },
+                success: function (response) {
+                    if (response.success) {
+                        console.log("AJAX EXITOSO", response);
+                        
+
+                        // Actualizar la interfaz con el nuevo estado
+                            setTimeout(() => {
+        $("td[data-task-status='" + taskId + "']").text(newStatus ? "✅ Done" : "❌ Incomplete");
+    }, 100);
+                        $("#edit-status-" + taskId).hide(); // Ocultar el selector
+                        $(".edit-task[data-id='" + taskId + "']").show(); // Volver a mostrar el botón Edit
+                    } else {
+                        alert("Error al actualizar el estado.");
+                    }
+                },
+                error: function () {
+                    alert("Hubo un problema con la solicitud.");
+                }
+            });
+        });
+
+        // Cancelar la edición y ocultar el formulario
+        $(".cancel-edit").click(function () {
+            var taskId = $(this).data("id");
+            $("#edit-status-" + taskId).hide(); // Ocultar el selector de estado
+            $(".edit-task[data-id='" + taskId + "']").show(); // Volver a mostrar el botón Edit
         });
     });
 </script>
