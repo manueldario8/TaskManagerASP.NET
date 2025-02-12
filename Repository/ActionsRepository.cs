@@ -63,6 +63,18 @@ namespace ToDoListWebApp.Repository
             return await _dbContext.ListToDo.Where(p => p.Success == success).ToListAsync();
         }
 
+        public async Task<bool> DeleteMultipleAsync(List<int> ids)
+        {
+            var taskToDelete = await _dbContext.ListToDo.Where(t => ids.Contains(t.Id)).ToListAsync();
+
+            if (taskToDelete.Any()) { 
+                
+                
+                _dbContext.ListToDo.RemoveRange(taskToDelete);
+            return await Save();}
+            return false;
+
+        }
 
         public async Task<bool> Save()
         {

@@ -1,51 +1,4 @@
-﻿@* @model IEnumerable<ToDoList>
-
-<table class="table">
-    <thead class="thead-dark">
-       
-        <tr>
-            <th scope="col">Nº</th>
-            <th scope="col">Title</th>
-            <th scope="col">Description</th>
-            <th scope="col">Status</th>
-        </tr>
-    </thead>
-    <tbody>
-       
-         @foreach(var item in Model){
-        <tr>
-            <th scope="row">@item.Id</th>
-            <td>@item.Title</td>
-            <td>@item.Description</td>
-            <td>@item.Success</td>
-            </tr>
-        }
- 
-    </tbody>
-</table>
-<div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-    <form method="get" action="@Url.Action("Index", "Tasks")">
-        <input type="hidden" name="success" value="true" />
-        <button type="submit" class="btn btn-secondary">Done</button>
-    </form>
-    <form method="get" action="@Url.Action("Index", "Tasks")">
-        <input type="hidden" name="success" value="false" />
-        <button type="submit" class="btn btn-secondary">Incomplete</button>
-    </form>
-    
-
-    <div class="btn-group" role="group">
-        <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-             Actions   
-        </button>
-        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-            <a class="dropdown-item" href="#">Create new task</a>
-            <a class="dropdown-item" href="#">Update task</a>
-            <a class="dropdown-item" href="#">Delete task</a>
-        </div>
-    </div>
-</div> *@
-@model IEnumerable<ToDoList>
+﻿@model IEnumerable<ToDoList>
 
 <h2>List to do</h2>
 
@@ -68,15 +21,48 @@
     </button>
     <div class="dropdown-menu">
         <a class="dropdown-item" asp-action="Create" asp-controller="Tasks">Create task</a>
-        <a class="dropdown-item" href="#">Edit task</a>
-        <a class="dropdown-item" href="#">Delete task</a>
+        <a class="dropdown-item" id="toggle-delete-mode">Delete</a>
     </div>
 </div>
+
+<!-- Botón para eliminar -->
+<button id="delete-selected" class="btn btn-danger mt-3" style="display:none;">🗑 Delete Selected</button>
 
 <!-- Script para actualizar dinámicamente la tabla sin recargar -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function () {
+        $("#toggle-delete-mode").click(function () {
+            $(".delete-checkbox").toggle();
+            $("#delete-selected").toggle();
+        });
+
+        // Enviar elementos seleccionados para eliminar
+        $("#delete-selected").click(function () {
+            var selectedIds = [];
+            $(".delete-checkbox:checked").each(function () {
+                selectedIds.push($(this).val());
+            });
+
+            if (selectedIds.length === 0) {
+                alert("Please select at least one task to delete");
+                return;
+            }
+
+            $.ajax({
+                url: '/Tasks/DeleteMultiple',
+                type: 'POST',
+                contentType: "application/json",
+                   data: JSON.stringify(selectedIds),
+                success: function () {
+                    location.reload(); // Recargar la lista
+                },
+                error: function () {
+                    alert("Error deleting tasks.");
+                }
+        });
+        });
+
         // Filtrar las tareas según su estado (completado o pendiente)
         $(".filter-btn").click(function () {
             var status = $(this).data("status");
@@ -112,13 +98,13 @@
             $.ajax({
                 url: '/Tasks/ToggleTaskStatus',
                 type: 'POST',
-                data: { id: taskId, success: newStatus },
+                contentType: "application/json",
+                data: JSON.stringify({ id: taskId, success: newStatus }),
                 success: function (response) {
                     if (response.success) {
                         console.log("AJAX EXITOSO", response);
                         
-
-                        // Actualizar la interfaz con el nuevo estado
+ // Actualizar la interfaz con el nuevo estado
                             setTimeout(() => {
         $("td[data-task-status='" + taskId + "']").text(newStatus ? "✅ Done" : "❌ Incomplete");
     }, 100);

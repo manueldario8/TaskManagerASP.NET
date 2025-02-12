@@ -95,5 +95,24 @@ namespace ToDoListWebApp.Controllers
         }
 
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteMultiple([FromBody] List<int> ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                return Json(new { success = false });
+            }
+
+            bool deleted = await _listtask.DeleteMultipleAsync(ids);
+            if (deleted)
+            {
+                await _listtask.Save();
+                return Json(new { success = true });
+            }
+
+            return Json(new { success = false, message = "Error deleting tasks" });
+
+        }
+
     }
 }

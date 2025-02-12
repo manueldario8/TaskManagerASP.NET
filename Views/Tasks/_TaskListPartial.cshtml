@@ -3,31 +3,38 @@
 <table class="table">
     <thead class="thead-dark">
         <tr>
+            <th>Select</th>
             <th>Task ID</th>
             <th>Task Name</th>
             <th>Task Description</th>
             <th>Task Status</th>
             <th>Actions</th>
         </tr>
-    </thead><br />
+    </thead>
     <tbody>
         @foreach (var task in Model)
         {
             <tr>
+                <!-- Checkbox para eliminación múltiple -->
+                <td>
+                    <input type="checkbox" class="delete-checkbox" value="@task.Id" style="display:none;" />
+                </td>
                 <td scope="row">@task.Id</td>
                 <td>@task.Title</td>
                 <td>@task.Description</td>
                 <td data-task-status="@task.Id">@(task.Success ? "✅ Done" : "❌ Incomplete")</td>  
-                <td>
-                
+                <td>   
                     <!-- Botón Edit para cambiar el estado -->
-                    <button class="btn btn-primary edit-task" data-id="@task.Id" data-status="@task.Success">
+                    <button class="btn btn-primary edit-task" data-id="@task.Id">
                         Edit
-                    </button>     
-                    <div id="edit-status-@task.Id" class="status-edit-form" asp-for="Task.Success" style="display:none;">
-                        <select class="form-select" id="status-selector-@task.Id">                            
-                            <option value="true">Done </option>
-                            <option value="false">Incomplete</option>
+                    </button>
+
+                    <!-- Formulario oculto para cambiar el estado -->
+                    <div id="edit-status-@task.Id" class="status-edit-form" style="display:none;">
+                        <select class="form-select" id="status-selector-@task.Id">
+                            <option value="true" selected="@(task.Success)">Done</option>
+                            <option value="false" selected="@(task.Success == false)">Incomplete</option>
+
                         </select>
                         <button class="btn btn-success save-status" data-id="@task.Id">Save</button>
                         <button class="btn btn-secondary cancel-edit" data-id="@task.Id">Cancel</button>
@@ -37,3 +44,46 @@
         }
     </tbody>
 </table>
+
+<script>
+    $(document).ready(function () {
+        // Activar edición del estado
+        $(".edit-task").click(function () {
+            var taskId = $(this).data("id");
+            $("#edit-status-" + taskId).show();
+            $(this).hide();
+        });
+
+        // Guardar nuevo estado de la tarea
+        $(".save-status").click(function () {
+            var taskId = $(this).data("id");
+            var newStatus = $("#status-selector-" + taskId).val() === "true";
+
+            $.ajax({
+                url: '/Tasks/ToggleTaskStatus',
+                type: 'POST',
+                data: { id: taskId, success: newStatus },
+                success: function (response) {
+                    if (response.success) {
+                        $("td[data-task-status='" + taskId + "']").text(newStatus ? "✅ Done" : "❌ Incomplete");
+                        $("#edit-status-" + taskId).hide();
+                        $(".edit-task[data-id='" + taskId + "']").show();
+                    } else {
+                        alert("Error updating task.");
+                    }
+                },
+                error: function () {
+                    alert("An error occurred.");
+                }
+            });
+        });
+
+        // Cancelar edición
+        $(".cancel-edit").click(function () {
+            var taskId = $(this).data("id");
+            $("#edit-status-" + taskId).hide();
+            $(".edit-task[data-id='" + taskId + "']").show();
+        });
+    });
+</script>
+
